@@ -1,11 +1,14 @@
 #!/bin/bash
 #
-[ "$UID" -ne 0 ] && echo "Permission denied,you need to be root." &&  exit \
-|| echo "Ready to perform..."
+[ "$UID" -ne 0 ] && echo "Permission denied,you need to be root." &&  exit 
+
+
 #Tomcat startup script 
+
+SCRIPT_PID=$$
 TOMCAT_HOME=/usr/local/tomcat7
 TOMCAT_START=$TOMCAT_HOME/bin/startup.sh
-TOMCAT_STOP=$TOMCAT_HOME/bin/shutdown.sh
+#TOMCAT_STOP=$TOMCAT_HOME/bin/shutdown.sh
 SCHOOL_SERVER_PATH=production
 export SCHOOL_SERVER_PATH
 JAVA_HOME=/usr/local/java/jdk1.7.0_65
@@ -18,19 +21,24 @@ export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
 #Check for tomcat script
 if [ ! -f $TOMCAT_HOME/bin/catalina.sh ]
 then
-    echo "Tomcat not available."
+    echo ?Tomcat not available??
     exit
 fi
+usage() {
+             echo $"Usage:$0 {start|stop|restart|update}"
+}
 start() {
-    echo -n Starting Tomcat
+    echo -n "Starting Tomcat..."
     $TOMCAT_START
+    RETVAL=$?
     echo
     sleep 1
-#
+    [ $RETVAL -eq 0 ] && echo "Tomcat Started !"
+#Instead should check to see if apache is up by looking for httpd.pid
 }
 stop() {
     echo -n $"Shutting down Tomcat..."
-    ps -ef | grep 'java' | grep -v grep | awk '{print $2 }'| xargs kill -9
+    ps -ef | grep 'tomcat' | egrep -v "grep|$SCRIPT_PID" | awk '{print $2 }'| xargs kill -9
     echo "Tomcat stopped."
 }
 update() {
@@ -46,16 +54,13 @@ case "$1" in
              stop
                 ;;
         restart)
-             $TOMCAT_STOP && sleep 1 && echo "###Tomcat Stopped.###"
-             start
+        stop && sleep 1 
+            start
                 ;;
         update)
               update
                 ;;
-        upstart)
-              update && $TOMCAT_STOP && sleep 1 && echo "###Tomcat Stopped.###" && start
-                ;;
            *)
-             echo $"Usage:$0 {start|stop|restart|update|update_restart}"
+                usage
                 ;;
 esac
