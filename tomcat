@@ -1,7 +1,6 @@
 #!/bin/bash
 #Tomcat startup script 
-[ "$UID" -ne 0 ] && echo "Permission denied,you need to be root." &&  exit \
-|| echo "Ready to perform..."
+[ "$UID" -ne 0 ] && echo "Permission denied,you need to be root." &&  exit
 
 SCRIPT_PID=$$
 TOMCAT_HOME=/usr/local/tomcat7
