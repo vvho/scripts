@@ -21,7 +21,7 @@ export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
 #Check for tomcat script
 if [ ! -f $TOMCAT_HOME/bin/catalina.sh ]
 then
-    echo ?Tomcat not available??
+    echo "Tomcat not available."
     exit
 fi
 usage() {
@@ -34,7 +34,7 @@ start() {
     echo
     sleep 1
     [ $RETVAL -eq 0 ] && echo "Tomcat Started !"
-#Instead should check to see if apache is up by looking for httpd.pid
+#
 }
 stop() {
     echo -n $"Shutting down Tomcat..."
