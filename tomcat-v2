@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+[ "$UID" -ne 0 ] && echo "Permission denied,you need to be root." &&  exit \
+|| echo "Ready to perform..."
+#Tomcat startup script 
+TOMCAT_HOME=/usr/local/tomcat7
+TOMCAT_START=$TOMCAT_HOME/bin/startup.sh
+TOMCAT_STOP=$TOMCAT_HOME/bin/shutdown.sh
+SCHOOL_SERVER_PATH=production
+export SCHOOL_SERVER_PATH
+JAVA_HOME=/usr/local/java/jdk1.7.0_65
+export JRE_HOME=/usr/local/java/jdk1.7.0_65/jre
+export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH
+export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
+
+. /lib/lsb/init-functions
+
+#Check for tomcat script
+if [ ! -f $TOMCAT_HOME/bin/catalina.sh ]
+then
+    echo "Tomcat not available."
+    exit
+fi
+start() {
+    echo -n Starting Tomcat
+    $TOMCAT_START
+    echo
+    sleep 1
+#
+}
+stop() {
+    echo -n $"Shutting down Tomcat..."
+    ps -ef | grep 'java' | grep -v grep | awk '{print $2 }'| xargs kill -9
+    echo "Tomcat stopped."
+}
+update() {
+cd /usr/local/tomcat7/webapps/ROOT && git pull
+[ $? -eq 0 ] && echo "Already up-to-date"
+}
+
+case "$1" in
+        start)
+             start
+                ;;
+        stop)
+             stop
+                ;;
+        restart)
+             $TOMCAT_STOP && sleep 1 && echo "###Tomcat Stopped.###"
+             start
+                ;;
+        update)
+              update
+                ;;
+        upstart)
+              update && $TOMCAT_STOP && sleep 1 && echo "###Tomcat Stopped.###" && start
+                ;;
+           *)
+             echo $"Usage:$0 {start|stop|restart|update|update_restart}"
+                ;;
+esac
