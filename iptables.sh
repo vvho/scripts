@@ -34,7 +34,7 @@ echo "Loading modules..."
 /sbin/modprobe ipt_connlimit
 /sbin/modprobe ipt_LOG
 /sbin/modprobe xt_state
-echo "Modules load complete."
+echo "Modules loading complete."
 
 # Empty exist rules.
 echo "Flush deprecated firewall rules..."
@@ -56,6 +56,8 @@ iptables -P FORWARD DROP
 echo "Setting rules for ssh,http,dns..."
 # Drop INVALID
 iptables -A INPUT -m state --state INVALID -j DROP
+iptables -A OUTPUT -m state --state INVALID -j DROP
+iptables -A FORWARD -m state --state INVALID -j DROP
 
 # Accept ESTABLISHED,RELATED
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
@@ -75,7 +77,7 @@ iptables -A OUTPUT -m icmp -p icmp --icmp-type echo-request -m state --state NEW
 iptables -A OUTPUT -p udp --dport 53 -m state --state NEW -j ACCEPT
 iptables -A OUTPUT -p tcp --dport 53 -m state --state NEW -j ACCEPT
 
-# SSH:Allow remote connect to local
+# SSH:Allow remote connect to local <with limit>
 iptables -A INPUT -p tcp --dport $SSH_PORT -m limit --limit 3/m --limit-burst 5 -j ACCEPT
 iptables -A INPUT -p tcp --dport $SSH_PORT -m limit -j DROP
 
